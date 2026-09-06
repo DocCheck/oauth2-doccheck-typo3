@@ -1,0 +1,44 @@
+name: Extension CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: TYPO3 ${{ matrix.typo3 }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        typo3: ['13.4', '14.3']
+        php: ['8.2', '8.3', '8.4', '8.5']
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Check out the published extension
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Resolve TYPO3 compatibility lane
+        run: >-
+          composer update --no-interaction --prefer-dist --with-all-dependencies
+          "typo3/cms-core:^${{ matrix.typo3 }}"
+
+      - name: Run quality suite
+        run: composer ci

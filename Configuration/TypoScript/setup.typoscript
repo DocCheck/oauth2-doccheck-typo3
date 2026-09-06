@@ -1,0 +1,9 @@
+// Economy/Business states are per browser session; never cache this element.
+tt_content.oauth2docchecktypo3_loginbutton = COA_INT
+tt_content.oauth2docchecktypo3_loginbutton {
+    10 = FLUIDTEMPLATE
+    10 {
+        templateName = LoginButton
+        templateRootPaths.10 = EXT:oauth2_doccheck_typo3/Resources/Private/Templates/ContentElements/
+    }
+}

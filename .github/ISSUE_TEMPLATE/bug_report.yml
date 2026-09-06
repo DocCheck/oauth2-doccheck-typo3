@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible problem in the TYPO3 extension.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include client secrets, authorization codes, access or refresh
+        tokens, session cookies, personal profile data, or customer callback URIs.
+        Use the private process described in SECURITY.md for vulnerabilities.
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      placeholder: "0.1.x"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: TYPO3 and PHP versions
+      placeholder: "TYPO3 14.3.x, PHP 8.4"
+    validations:
+      required: true
+  - type: dropdown
+    id: licence-mode
+    attributes:
+      label: Licence mode
+      options:
+        - Basic
+        - Economy
+        - Business
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour and safe reproduction steps
+    validations:
+      required: true
