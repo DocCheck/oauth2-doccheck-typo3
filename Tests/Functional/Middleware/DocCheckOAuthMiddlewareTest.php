@@ -15,6 +15,7 @@ use DocCheck\OAuth2DocCheckTypo3\OAuth\FrontendSessionOAuthTransactionStore;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\OAuthTransaction;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\OAuthTransactionFactory;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\TokenExchanger;
+use DocCheck\OAuth2DocCheckTypo3\Presentation\InformationPageRenderer;
 use League\OAuth2\Client\Token\AccessToken;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -58,6 +59,7 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
 
         self::assertSame(400, $response->getStatusCode());
         self::assertStringContainsString('cancelled', (string)$response->getBody());
+        self::assertStringContainsString('doccheck-info-box', (string)$response->getBody());
         self::assertSame(0, $provider->tokenExchangeCalls);
         self::assertNull((new FrontendSessionOAuthTransactionStore($frontendUser))->consume('denied-state'));
     }
@@ -169,6 +171,7 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
                 $provider,
                 $provider,
                 $identity,
+                new InformationPageRenderer(),
             ),
             $provider,
             $identity,

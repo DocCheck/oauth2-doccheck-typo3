@@ -72,7 +72,7 @@ final readonly class LoginButtonRenderer
 
     private function configurationWarning(): string
     {
-        return '<p role="alert"><strong>DocCheck configuration required:</strong> This site has no complete active licence profile. Configure the client ID, server-side client secret, and exact HTTPS callback URI before using this button.</p>';
+        return '<aside class="doccheck-info-box" role="alert"><strong>DocCheck configuration required:</strong> This site has no complete active licence profile. Configure the client ID, server-side client secret, and exact HTTPS callback URI before using this button.</aside>';
     }
 
     private function size(string $size): string
