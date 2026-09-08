@@ -1,11 +1,11 @@
 # Upgrade notes
 
-## Upgrading to 0.1.x
+## Upgrading to 0.8.0-beta
 
-This is the first public release line; there is no supported upgrade path from
-an earlier version of this package.
+This is the first public beta release line; there is no supported upgrade path
+from an earlier version of this package.
 
-Before deploying a new 0.1.x version:
+Before deploying a new 0.8.x beta version:
 
 1. Back up the TYPO3 database and deployed environment configuration.
 2. Run `composer update doccheck/oauth2-doccheck-typo3`.

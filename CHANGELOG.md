@@ -6,11 +6,14 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## 0.8.0-beta - 2026-09-08
+
 ### Added
 
 - Composer installation and configuration documentation.
 - Basic, Economy, and Business licence-mode handling.
 - Official DocCheck login-button integration, protected pages/content, local
+- Editor-facing diagnostic session-status content element with token-free licence and local-session details.
   logout, and token-free session-status diagnostics.
 - Callback functional tests using a fake provider.
 - GitHub Actions compatibility matrix for TYPO3 13.4/14.3 and PHP 8.2–8.5.
@@ -19,7 +22,3 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Server-side, single-use state validation for Economy and Business callbacks.
 - Safe local redirect handling and token-free local session storage.
-
-## 0.8.0-beta - 2026-09-04
-
-Initial public alpha release of DocCheck OAuth2 for TYPO3.
