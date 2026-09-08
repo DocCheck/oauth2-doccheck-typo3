@@ -36,9 +36,9 @@ jobs:
         run: composer validate --strict
 
       - name: Resolve TYPO3 compatibility lane
-        run: >-
+        run: |
+          composer require --no-interaction --no-update "typo3/cms-core:^${{ matrix.typo3 }}"
           composer update --no-interaction --prefer-dist --with-all-dependencies
-          "typo3/cms-core:^${{ matrix.typo3 }}"
 
       - name: Run quality suite
         run: composer ci
