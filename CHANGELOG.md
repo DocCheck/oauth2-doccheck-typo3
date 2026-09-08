@@ -6,6 +6,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Fixed
+
+- Report abandoned transitive packages during Composer audit without failing the
+  supported TYPO3 13 compatibility lanes; security advisories remain blocking.
+
 ## 0.8.0-beta - 2026-09-08
 
 ### Added
