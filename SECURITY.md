@@ -2,8 +2,8 @@
 
 ## Supported versions
 
-Security fixes are provided for the current 0.1.x release line while it remains
-the documented public release line. Install the latest compatible patch release
+Security fixes are provided for the current 0.8.x beta release line while it
+remains the documented public release line. Install the latest compatible patch release
 promptly.
 
 ## Reporting a vulnerability
