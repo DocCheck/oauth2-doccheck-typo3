@@ -49,6 +49,24 @@ Provisioning requires `unique_id`. Profile data is requested only after a
 successful token exchange and the user's consent. The extension does not store
 OAuth access or refresh tokens.
 
+## Diagnostic session-status content element
+
+The extension provides a **DocCheck session status (diagnostic)** content
+element. It is intended for an administrator-controlled debug page and renders
+only the active licence mode, local DocCheck session state, and allow-listed
+consented profile values. It never renders OAuth credentials, tokens, callback
+parameters, or unrecognised provider data. It includes a link to [DocCheck user-data endpoint return values](https://docs.doccheck.com/login-access/oauth/endpoints/user_data_endpoint_return_values.html) for interpreting returned fields.
+
+To prevent ordinary editors from adding it, remove
+`oauth2docchecktypo3_sessionstatus` from their `tt_content.CType` choices using
+Page or User TSconfig. For example, add this to the User TSconfig assigned to non-maintainer editor groups:
+
+```typoscript
+TCEFORM.tt_content.CType.removeItems := addToList(oauth2docchecktypo3_sessionstatus)
+```
+
+The element must still be placed only on an administrator-controlled, non-public debug page; editor visibility alone is not frontend access control.
+
 ## Validation checklist
 
 Before exposing a login button, verify all of the following:
@@ -58,4 +76,4 @@ Before exposing a login button, verify all of the following:
    configuration.
 3. The callback URI is HTTPS and exactly matches the registered DocCheck URI.
 4. Basic has no requested scopes; paid modes use only permitted minimum scopes.
-5. Paid-mode login and logout are tested in a fresh browser session.
+5. Paid-mode login and logout are tested after switching the active profile, which clears local frontend sessions in the supplied testbeds.

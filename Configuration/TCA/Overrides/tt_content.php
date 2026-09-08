@@ -34,3 +34,19 @@ ExtensionManagementUtility::addPlugin(
 $GLOBALS['TCA']['tt_content']['types']['oauth2docchecktypo3_loginbutton'] = [
     'showitem' => '--palette--;;general, --palette--;;headers, --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access, --palette--;;hidden',
 ];
+
+ExtensionManagementUtility::addPlugin(
+    new SelectItem(
+        'select',
+        'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:ttContent.sessionStatus',
+        'oauth2docchecktypo3_sessionstatus',
+        'actions-document-info',
+        'plugins',
+    ),
+    'CType',
+    'oauth2_doccheck_typo3',
+);
+
+$GLOBALS['TCA']['tt_content']['types']['oauth2docchecktypo3_sessionstatus'] = [
+    'showitem' => '--palette--;;general, --palette--;;headers, --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access, --palette--;;hidden',
+];

@@ -6,6 +6,7 @@
             <trans-unit id="pages.requiresAuth"><source>Require DocCheck authentication</source></trans-unit>
             <trans-unit id="ttContent.requiresAuth"><source>Require DocCheck authentication</source></trans-unit>
             <trans-unit id="ttContent.loginButton"><source>DocCheck Access login button</source></trans-unit>
+            <trans-unit id="ttContent.sessionStatus"><source>DocCheck session status (diagnostic)</source></trans-unit>
         </body>
     </file>
 </xliff>

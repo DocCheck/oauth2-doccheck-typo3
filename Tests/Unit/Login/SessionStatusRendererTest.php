@@ -38,6 +38,7 @@ final class SessionStatusRendererTest extends TestCase
 
         self::assertStringContainsString('DocCheck unique ID', $markup);
         self::assertStringContainsString('Economy', $markup);
+        self::assertStringContainsString('user_data_endpoint_return_values.html', $markup);
         self::assertStringContainsString('&lt;Physician&gt;', $markup);
         self::assertStringNotContainsString('<Physician>', $markup);
     }

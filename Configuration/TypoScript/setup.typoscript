@@ -7,3 +7,13 @@ tt_content.oauth2docchecktypo3_loginbutton {
         templateRootPaths.10 = EXT:oauth2_doccheck_typo3/Resources/Private/Templates/ContentElements/
     }
 }
+
+// The diagnostic status belongs to the current browser session; never cache it.
+tt_content.oauth2docchecktypo3_sessionstatus = COA_INT
+tt_content.oauth2docchecktypo3_sessionstatus {
+    10 = FLUIDTEMPLATE
+    10 {
+        templateName = SessionStatus
+        templateRootPaths.10 = EXT:oauth2_doccheck_typo3/Resources/Private/Templates/ContentElements/
+    }
+}

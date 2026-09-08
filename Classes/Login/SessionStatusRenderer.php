@@ -9,6 +9,7 @@ namespace DocCheck\OAuth2DocCheckTypo3\Login;
  */
 final class SessionStatusRenderer
 {
+    private const USER_DATA_RETURN_VALUES_URL = 'https://docs.doccheck.com/login-access/oauth/endpoints/user_data_endpoint_return_values.html';
     /**
      * @param array{authenticated: bool, mode: 'none'|'basic'|'paid-anonymous'|'identity', frontendUserUid?: int, uniqueId?: string, profile?: array<string, string>} $status
      */
@@ -58,6 +59,10 @@ final class SessionStatusRenderer
             $markup .= '</dl>';
         }
 
+        $markup .= sprintf(
+            '<p class="doccheck-session-status__description">Field reference: <a href="%s" target="_blank" rel="noopener noreferrer">DocCheck user-data endpoint return values</a>.</p>',
+            self::USER_DATA_RETURN_VALUES_URL,
+        );
         return $markup . '</section>';
     }
 

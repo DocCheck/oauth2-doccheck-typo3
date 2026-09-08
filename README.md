@@ -92,11 +92,15 @@ using it. Any page or content element can be marked **Require DocCheck
 authentication**; unauthenticated users receive a 403 page with the same login
 component, while protected content is omitted from the response.
 
-The supplied content element is deliberately rendered as TYPO3 `COA_INT`, so a
-paid-licence `state` belongs to the browser that receives the button rather
-than to the shared page cache. If the Fluid ViewHelper is embedded in a custom
-site template, render that fragment as `USER_INT`/`COA_INT` as well. Do not
-place a paid-licence login button in a cacheable Fluid page template.
+The supplied Login Button and **DocCheck session status (diagnostic)** content
+elements are deliberately rendered as TYPO3 `COA_INT`, so their data belongs to
+the browser that receives it rather than to the shared page cache. The status
+element may show only the active licence mode, local session state, and
+allow-listed profile values; it never shows OAuth credentials or tokens. Add it
+only to a protected administrator/debug page. To hide it from ordinary editors,
+remove `oauth2docchecktypo3_sessionstatus` from their Page/User TSconfig CType
+list. If the Fluid ViewHelpers are embedded in a custom site template, render
+that fragment as `USER_INT`/`COA_INT` as well.
 
 ## Local logout and session-status element
 
