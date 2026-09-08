@@ -86,17 +86,17 @@
         },
         "sort-packages": true,
         "allow-plugins": {
-        "ergebnis/composer-normalize": true,
-        "typo3/class-alias-loader": true,
-        "typo3/cms-composer-installers": true
+            "ergebnis/composer-normalize": true,
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
         }
     },
     "extra": {
         "typo3/cms": {
             "extension-key": "oauth2_doccheck_typo3",
-            "version": "0.8.0-beta",
+            "version": "0.8.0-beta1",
             "Package": {
-                "providesPackages": {}
+                "providesPackages": []
             }
         }
     },
