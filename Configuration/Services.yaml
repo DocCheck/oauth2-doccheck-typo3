@@ -1,0 +1,32 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  DocCheck\OAuth2DocCheckTypo3\:
+    resource: '../Classes/*'
+
+  DocCheck\OAuth2DocCheckTypo3\Configuration\DocCheckConfigurationProvider:
+    alias: DocCheck\OAuth2DocCheckTypo3\Configuration\DocCheckConfigurationFactory
+
+  DocCheck\OAuth2DocCheckTypo3\OAuth\AuthorizationUrlGenerator:
+    alias: DocCheck\OAuth2DocCheckTypo3\OAuth\AuthorizationService
+
+  DocCheck\OAuth2DocCheckTypo3\OAuth\TokenExchanger:
+    alias: DocCheck\OAuth2DocCheckTypo3\OAuth\TokenExchangeService
+
+  DocCheck\OAuth2DocCheckTypo3\Identity\UserDataFetcher:
+    alias: DocCheck\OAuth2DocCheckTypo3\Identity\UserDataService
+
+  DocCheck\OAuth2DocCheckTypo3\Identity\IdentityEstablisher:
+    alias: DocCheck\OAuth2DocCheckTypo3\Identity\IdentityService
+
+  DocCheck\OAuth2DocCheckTypo3\Login\LoginButtonRenderer:
+    public: true
+
+  DocCheck\OAuth2DocCheckTypo3\Login\SessionStatusRenderer:
+    public: true
+
+  DocCheck\OAuth2DocCheckTypo3\EventListener\FilterProtectedContentListener:
+    tags:
+      - name: event.listener

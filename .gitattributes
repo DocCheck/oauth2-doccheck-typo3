@@ -1,0 +1,17 @@
+# Consistent source checkout/archive line endings.
+* text=auto eol=lf
+
+# Development and repository-management material: keep it on GitHub,
+# but omit it from generated release/source archives.
+.github/** export-ignore
+Tests/** export-ignore
+.editorconfig export-ignore
+.gitignore export-ignore
+.php-cs-fixer.dist.php export-ignore
+phpstan.neon export-ignore
+phpunit.xml.dist export-ignore
+rector.php export-ignore
+CONTRIBUTING.md export-ignore
+
+# The archive does not need to carry its own archive rules.
+.gitattributes export-ignore

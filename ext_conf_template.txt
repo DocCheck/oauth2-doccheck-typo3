@@ -1,0 +1,23 @@
+# cat=basic/auth; type=options[basic,economy,business]; label=DocCheck licence mode
+# The selected DocCheck client licence. Basic never sends scopes or state.
+licenseMode = basic
+
+# cat=basic/auth; type=string; label=Requested DocCheck scopes
+# Comma-separated minimum scopes. Available only for Economy and Business; leave empty for Basic.
+requestedScopes =
+
+# cat=basic/auth; type=int; label=Default frontend user group UID
+# Optional group assigned when frontend-user provisioning is enabled. 0 disables assignment.
+defaultFrontendUserGroup = 0
+
+# cat=basic/auth; type=boolean; label=Enable frontend-user provisioning
+# Economy and Business only. Creates or updates users using DocCheck unique_id.
+enableFrontendUserProvisioning = 0
+
+# cat=basic/auth; type=boolean; label=Allow anonymous-session fallback
+# Economy and Business only. Disabled by default so provisioning failures do not grant access.
+allowAnonymousSessionFallback = 0
+
+# cat=basic/logging; type=boolean; label=Enable DocCheck diagnostic logging
+# Development diagnostics only. Sensitive OAuth values are never logged.
+debugLogging = 0

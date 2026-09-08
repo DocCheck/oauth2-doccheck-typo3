@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+    <file source-language="en" datatype="plaintext" original="messages" date="2026-09-02T00:00:00Z" product-name="oauth2_doccheck_typo3">
+        <header/>
+        <body>
+            <trans-unit id="pages.requiresAuth"><source>Require DocCheck authentication</source></trans-unit>
+            <trans-unit id="ttContent.requiresAuth"><source>Require DocCheck authentication</source></trans-unit>
+            <trans-unit id="ttContent.loginButton"><source>DocCheck Access login button</source></trans-unit>
+            <trans-unit id="ttContent.sessionStatus"><source>DocCheck session status (diagnostic)</source></trans-unit>
+        </body>
+    </file>
+</xliff>
