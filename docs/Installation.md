@@ -52,7 +52,7 @@ login button.
 
 After the login page works:
 
-- Enable **Require DocCheck authentication** on a page to require a local
+- Enable **Require DocCheck Access authentication** on a page to require a local
   DocCheck session for the whole page.
 - Enable the same field on an individual content element to omit that element
   for unauthenticated visitors.

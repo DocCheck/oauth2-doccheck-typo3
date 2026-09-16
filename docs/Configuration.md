@@ -26,14 +26,14 @@ registered at DocCheck. The extension routes callbacks through
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `licenseMode` | `basic` | Selects `basic`, `economy`, or `business` behaviour. |
-| `requestedScopes` | empty | Comma-separated minimum scopes for Economy/Business. Leave empty for Basic; provisioning requires `unique_id`. |
+| `licenseMode` | `basic` | Selects the DocCheck Access licence behaviour: `basic`, `economy`, or `business`. |
+| `requestedScopes` | empty | Comma-separated minimum DocCheck Access scopes for Economy/Business. Leave empty for Basic; provisioning requires `unique_id`. |
+| `enableFrontendUserProvisioning` | `0` | Enables Economy/Business DocCheck Access frontend-user provisioning. Requires `unique_id`. |
 | `defaultFrontendUserGroup` | `0` | Optional TYPO3 frontend-user group for provisioned identities; `0` assigns none. |
-| `enableFrontendUserProvisioning` | `0` | Enables Economy/Business frontend-user provisioning. Requires `unique_id`. |
 | `profileFieldMapping` | empty | Optional Business-only list: `name`, `email`. Requires provisioning and the corresponding requested scopes. |
 | `profileFieldSync` | `create_only` | The only supported policy. Writes approved fields only while creating a new FE user; never overwrites an existing local field. |
 | `allowAnonymousSessionFallback` | `0` | Allows a paid anonymous session only when provisioning cannot complete. Keep disabled unless this fallback is intentional. |
-| `debugLogging` | `0` | Enables development-only scope-response diagnostics. OAuth credentials, tokens, and profile values are not logged by the extension. |
+| `debugLogging` | `0` | Enables development-only DocCheck Access scope-response diagnostics. OAuth credentials, tokens, and profile values are not logged by the extension. |
 
 ## Licence rules
 
@@ -117,7 +117,7 @@ available. Missing `unique_id` prevents provisioning.
 
 ## Diagnostic session-status content element
 
-The extension provides a **DocCheck session status (diagnostic)** content
+The extension provides a **DocCheck Access session status (diagnostic)** content
 element. It is intended for an administrator-controlled debug page and renders
 only the active licence mode, local DocCheck session state, and allow-listed
 consented profile values. It never renders OAuth credentials, tokens, callback

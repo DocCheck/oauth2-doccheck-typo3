@@ -1,31 +1,24 @@
-# cat=basic/auth; type=options[basic,economy,business]; label=DocCheck licence mode
-# The selected DocCheck client licence. Basic never sends scopes or state.
+# cat=access/licence; type=options[basic,economy,business]; label=DocCheck Access licence mode: Select the licence assigned to the DocCheck Access client. Basic authenticates only and never sends scopes or state.
 licenseMode = basic
 
-# cat=basic/auth; type=string; label=Requested DocCheck scopes
-# Comma-separated scope identifiers, not API field names. Economy: unique_id, profession, country, language. Business also: name, email, address, occupation_detail. Leave empty for Basic; provisioning requires unique_id.
+# cat=access/scopes; type=string; label=Requested DocCheck Access scopes: Economy and Business only. Leave empty for Basic; frontend-user provisioning requires unique_id.
 requestedScopes =
 
-# cat=basic/auth; type=int; label=Default frontend user group UID
-# Optional group assigned when frontend-user provisioning is enabled. 0 disables assignment.
-defaultFrontendUserGroup = 0
-
-# cat=basic/auth; type=boolean; label=Enable frontend-user provisioning
-# Economy and Business only. Creates or updates users using DocCheck unique_id.
+# cat=frontend-users/provisioning; type=boolean; label=Enable DocCheck Access frontend-user provisioning: Economy and Business only. Requires the unique_id scope.
 enableFrontendUserProvisioning = 0
 
-# cat=basic/auth; type=string; label=Persist approved profile fields
-# Optional Business-only list: name,email. Requires provisioning and the matching requested scopes. Writes only newly created FE-user records; never use raw TYPO3 field names here.
+# cat=frontend-users/provisioning; type=int; label=Default TYPO3 frontend-user group UID: Used only when frontend-user provisioning is enabled. 0 assigns no group.
+defaultFrontendUserGroup = 0
+
+# cat=frontend-users/provisioning; type=string; label=Persist approved DocCheck Access profile fields: Business only. Requires frontend-user provisioning and matching requested scopes; writes only newly created FE-user records.
 profileFieldMapping =
 
-# cat=basic/auth; type=options[create_only]; label=Profile field synchronization
-# create_only is the only supported safe policy: local name/email edits are never overwritten by a later DocCheck login.
+# cat=frontend-users/provisioning; type=options[create_only]; label=DocCheck Access profile-field synchronization: Currently, create_only is the only available and safe policy. Local name/email edits are never overwritten by a later DocCheck Access login.
+# Currently, create_only is the only available and safe policy: local name/email edits are never overwritten by a later DocCheck Access login.
 profileFieldSync = create_only
 
-# cat=basic/auth; type=boolean; label=Allow anonymous-session fallback
-# Economy and Business only. Disabled by default so provisioning failures do not grant access.
+# cat=frontend-users/fallback; type=boolean; label=Allow anonymous DocCheck Access session fallback: Economy and Business only. Disabled by default so frontend-user provisioning failures do not grant access.
 allowAnonymousSessionFallback = 0
 
-# cat=basic/logging; type=boolean; label=Enable DocCheck diagnostic logging
-# Development only. Logs scope/status/missing API field names, never profile values, tokens, credentials, or callback parameters.
+# cat=diagnostics/logging; type=boolean; label=Enable DocCheck Access diagnostic logging: Development only. Logs scope/status/missing API field names, never profile values, tokens, credentials, or callback parameters.
 debugLogging = 0
