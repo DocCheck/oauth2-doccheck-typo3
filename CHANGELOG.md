@@ -6,6 +6,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## 0.8.0-beta2 - 2026-09-16
+
 ### Added
 
 - A TYPO3 Site Set that loads the DocCheck content-element TypoScript for
