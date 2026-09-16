@@ -12,15 +12,14 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
  */
 final readonly class FrontendUserProvisioner
 {
-    public function __construct(private ConnectionPool $connectionPool) {}
+    public function __construct(
+        private ConnectionPool $connectionPool,
+        private FrontendUserProfileFieldMapper $profileFieldMapper,
+    ) {}
 
-    /**
-     * @param array<string, mixed> $userData
-     */
-    public function provision(array $userData, DocCheckConfiguration $configuration, int $storagePid): int
+    public function provision(DocCheckProfile $profile, DocCheckConfiguration $configuration, int $storagePid): int
     {
-        $uniqueIdValue = $userData['unique_id'] ?? '';
-        $uniqueId = is_string($uniqueIdValue) ? trim($uniqueIdValue) : '';
+        $uniqueId = $profile->uniqueId ?? '';
         if ($uniqueId === '') {
             throw new \RuntimeException('DocCheck did not return the required unique_id.');
         }
@@ -47,6 +46,7 @@ final readonly class FrontendUserProvisioner
             'disable' => 0,
             'crdate' => time(),
         ];
+        $fields += $this->profileFieldMapper->forNewUser($profile, $configuration);
         $connection->insert('fe_users', $fields);
 
         return (int)$connection->lastInsertId();

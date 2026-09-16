@@ -41,8 +41,11 @@ oauth2_doccheck_typo3**:
 
 - licence mode (`basic`, `economy`, or `business`)
 - comma-separated minimum scopes (Economy/Business only; Basic rejects scopes)
+- scope-specific API field mapping; requested scopes are never interpreted as response-field names (see [Configuration](docs/Configuration.md#scope-reference))
+- optional privacy-safe diagnostics for missing, partial, or invalid scope responses via `debugLogging` (see [Configuration](docs/Configuration.md#scope-reference))
 - optional default frontend-user group UID
 - enable frontend-user provisioning (Economy/Business only)
+- optional, create-only `name` and `email` mappings for newly provisioned Business FE users; never an email-based identity lookup
 - explicit anonymous-session fallback (Economy/Business only; disabled by default)
 - development diagnostic logging
 
@@ -89,8 +92,11 @@ present: a configured active DocCheck Access client, server-side `clientId` and
 The extension also registers an editor-facing **DocCheck Access login button**
 content element. Include the extension's static TypoScript template before
 using it. Any page or content element can be marked **Require DocCheck
-authentication**; unauthenticated users receive a 403 page with the same login
-component, while protected content is omitted from the response.
+authentication**. Protected content is omitted from an unauthenticated response.
+For a protected page, add `<doccheck:protectedPageNotice />` to the site Fluid
+template before rendering page content. It renders the login notice in the
+site's existing layout and navigation. A site may return a 200 response, a 403
+response, or another documented local access-response policy.
 
 The supplied Login Button and **DocCheck session status (diagnostic)** content
 elements are deliberately rendered as TYPO3 `COA_INT`, so their data belongs to
@@ -143,7 +149,8 @@ The intended first implementation distinguishes DocCheck licence products:
   enabled. It stores no OAuth token. The optional status element retains only a
   short, allow-listed profile summary in the local browser session until logout.
   An anonymous fallback is a separate opt-in setting and remains disabled by
-  default.
+  default. A Business site may separately opt in to create-only `name` and
+  `email` mappings for newly provisioned users; see [Configuration](docs/Configuration.md#optional-fe-user-profile-fields).
 
 The authorization-request foundation enforces the protocol distinction now:
 Basic authorization URLs omit both `state` and `scope`; Economy/Business URLs

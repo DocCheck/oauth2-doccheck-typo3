@@ -7,8 +7,10 @@ namespace DocCheck\OAuth2DocCheckTypo3\Tests\Functional\Middleware;
 use DocCheck\OAuth2DocCheckTypo3\Access\AuthenticatedSession;
 use DocCheck\OAuth2DocCheckTypo3\Configuration\DocCheckConfiguration;
 use DocCheck\OAuth2DocCheckTypo3\Configuration\DocCheckConfigurationProvider;
+use DocCheck\OAuth2DocCheckTypo3\Identity\DocCheckProfile;
 use DocCheck\OAuth2DocCheckTypo3\Identity\IdentityEstablisher;
 use DocCheck\OAuth2DocCheckTypo3\Identity\UserDataFetcher;
+use DocCheck\OAuth2DocCheckTypo3\Identity\UserDataResult;
 use DocCheck\OAuth2DocCheckTypo3\Middleware\DocCheckOAuthMiddleware;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\AuthorizationUrlGenerator;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\FrontendSessionOAuthTransactionStore;
@@ -33,6 +35,8 @@ use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
  */
 final class DocCheckOAuthMiddlewareTest extends TestCase
 {
+    private const BUSINESS_SCOPES = 'unique_id,profession,country,language,name,email,address,occupation_detail';
+
     #[Test]
     public function paidCallbackSuccessEstablishesIdentityAndUsesStoredReturnPath(): void
     {
@@ -46,6 +50,45 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
         self::assertSame(1, $provider->tokenExchangeCalls);
         self::assertSame(1, $provider->userDataCalls);
         self::assertSame(1, $identity->establishCalls);
+        self::assertTrue((new AuthenticatedSession($frontendUser))->isAuthenticated());
+    }
+
+    #[Test]
+    public function businessCallbackWithMinimumScopeEstablishesIdentity(): void
+    {
+        [$middleware, $provider, $identity, $frontendUser] = $this->middleware([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id',
+        ]);
+        $this->saveTransaction($frontendUser, 'business-minimal-state', '/business-minimal');
+
+        $response = $middleware->process($this->oauthCallback(['code' => 'functional-code', 'state' => 'business-minimal-state'], $frontendUser), new UnusedRequestHandler());
+
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame('/business-minimal', $response->getHeaderLine('Location'));
+        self::assertNotNull($provider->userDataConfiguration);
+        self::assertSame('business', $provider->userDataConfiguration->licenseMode());
+        self::assertSame(['unique_id'], $provider->userDataConfiguration->requestedScopes());
+        self::assertSame(['unique_id'], $identity->receivedScopes);
+        self::assertTrue((new AuthenticatedSession($frontendUser))->isAuthenticated());
+    }
+
+    #[Test]
+    public function businessCallbackWithMaximumScopesPassesEveryScopeThroughThePaidFlow(): void
+    {
+        [$middleware, $provider, $identity, $frontendUser] = $this->middleware([
+            'licenseMode' => 'business',
+            'requestedScopes' => self::BUSINESS_SCOPES,
+        ]);
+        $this->saveTransaction($frontendUser, 'business-maximum-state', '/business-maximum');
+
+        $response = $middleware->process($this->oauthCallback(['code' => 'functional-code', 'state' => 'business-maximum-state'], $frontendUser), new UnusedRequestHandler());
+
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame('/business-maximum', $response->getHeaderLine('Location'));
+        self::assertNotNull($provider->userDataConfiguration);
+        self::assertSame(explode(',', self::BUSINESS_SCOPES), $provider->userDataConfiguration->requestedScopes());
+        self::assertSame(explode(',', self::BUSINESS_SCOPES), $identity->receivedScopes);
         self::assertTrue((new AuthenticatedSession($frontendUser))->isAuthenticated());
     }
 
@@ -149,7 +192,11 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
     /**
      * @return array{DocCheckOAuthMiddleware, FakeDocCheckProvider, FakeIdentityEstablisher, InMemoryFrontendUserAuthentication, FakeAuthorizationUrlGenerator}
      */
-    private function middleware(): array
+    /**
+     * @param array<string, mixed> $configurationOverrides
+     * @return array{DocCheckOAuthMiddleware, FakeDocCheckProvider, FakeIdentityEstablisher, InMemoryFrontendUserAuthentication, FakeAuthorizationUrlGenerator}
+     */
+    private function middleware(array $configurationOverrides = []): array
     {
         $provider = new FakeDocCheckProvider();
         $identity = new FakeIdentityEstablisher();
@@ -161,6 +208,7 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
             'licenseMode' => 'economy',
             'requestedScopes' => 'unique_id',
             'enableFrontendUserProvisioning' => true,
+            ...$configurationOverrides,
         ]);
 
         return [
@@ -229,6 +277,7 @@ final class FakeDocCheckProvider implements TokenExchanger, UserDataFetcher
     public int $tokenExchangeCalls = 0;
     public int $userDataCalls = 0;
     public bool $failTokenExchange = false;
+    public ?DocCheckConfiguration $userDataConfiguration = null;
 
     public function exchange(DocCheckConfiguration $configuration, string $code): AccessToken
     {
@@ -240,11 +289,24 @@ final class FakeDocCheckProvider implements TokenExchanger, UserDataFetcher
         return new AccessToken(['access_token' => 'functional-access-token']);
     }
 
-    public function fetch(DocCheckConfiguration $configuration, AccessToken $accessToken): array
+    public function fetch(DocCheckConfiguration $configuration, AccessToken $accessToken): UserDataResult
     {
         ++$this->userDataCalls;
+        $this->userDataConfiguration = $configuration;
 
-        return ['unique_id' => 'functional-user', 'profession_name' => 'Physician'];
+        return new UserDataResult(new DocCheckProfile(
+            'functional-user',
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        ), []);
     }
 }
 
@@ -252,15 +314,18 @@ final class FakeIdentityEstablisher implements IdentityEstablisher
 {
     public int $establishCalls = 0;
     public bool $failEstablishingIdentity = false;
+    /** @var list<string> */
+    public array $receivedScopes = [];
 
-    public function establish(array $userData, DocCheckConfiguration $configuration, FrontendUserAuthentication $frontendUser, int $storagePid): void
+    public function establish(UserDataResult $userData, DocCheckConfiguration $configuration, FrontendUserAuthentication $frontendUser, int $storagePid): void
     {
         ++$this->establishCalls;
+        $this->receivedScopes = $configuration->requestedScopes();
         if ($this->failEstablishingIdentity) {
             throw new \RuntimeException('Fake provisioner failed.');
         }
 
-        (new AuthenticatedSession($frontendUser))->establishIdentity(1, 'functional-user', ['profession_name' => 'Physician']);
+        (new AuthenticatedSession($frontendUser))->establishIdentity(1, 'functional-user');
     }
 }
 

@@ -3,7 +3,7 @@
 licenseMode = basic
 
 # cat=basic/auth; type=string; label=Requested DocCheck scopes
-# Comma-separated minimum scopes. Available only for Economy and Business; leave empty for Basic.
+# Comma-separated scope identifiers, not API field names. Economy: unique_id, profession, country, language. Business also: name, email, address, occupation_detail. Leave empty for Basic; provisioning requires unique_id.
 requestedScopes =
 
 # cat=basic/auth; type=int; label=Default frontend user group UID
@@ -14,10 +14,18 @@ defaultFrontendUserGroup = 0
 # Economy and Business only. Creates or updates users using DocCheck unique_id.
 enableFrontendUserProvisioning = 0
 
+# cat=basic/auth; type=string; label=Persist approved profile fields
+# Optional Business-only list: name,email. Requires provisioning and the matching requested scopes. Writes only newly created FE-user records; never use raw TYPO3 field names here.
+profileFieldMapping =
+
+# cat=basic/auth; type=options[create_only]; label=Profile field synchronization
+# create_only is the only supported safe policy: local name/email edits are never overwritten by a later DocCheck login.
+profileFieldSync = create_only
+
 # cat=basic/auth; type=boolean; label=Allow anonymous-session fallback
 # Economy and Business only. Disabled by default so provisioning failures do not grant access.
 allowAnonymousSessionFallback = 0
 
 # cat=basic/logging; type=boolean; label=Enable DocCheck diagnostic logging
-# Development diagnostics only. Sensitive OAuth values are never logged.
+# Development only. Logs scope/status/missing API field names, never profile values, tokens, credentials, or callback parameters.
 debugLogging = 0

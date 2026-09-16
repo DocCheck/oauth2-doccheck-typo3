@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DocCheck\OAuth2DocCheckTypo3\Configuration;
 
+use DocCheck\OAuth2DocCheckTypo3\Identity\DocCheckScope;
+
 /**
  * Validated configuration for the DocCheck OAuth client.
  *
@@ -12,23 +14,9 @@ namespace DocCheck\OAuth2DocCheckTypo3\Configuration;
  */
 final readonly class DocCheckConfiguration
 {
-    private const ECONOMY_SCOPES = [
-        'unique_id',
-        'profession',
-        'country',
-        'language',
-    ];
-
-    private const BUSINESS_SCOPES = [
-        ...self::ECONOMY_SCOPES,
-        'name',
-        'email',
-        'address',
-        'occupation_detail',
-    ];
-
     /**
      * @param list<string> $requestedScopes
+     * @param list<string> $profileFieldMappings
      */
     private function __construct(
         private string $clientId,
@@ -36,6 +24,8 @@ final readonly class DocCheckConfiguration
         private string $redirectUri,
         private string $licenseMode,
         private array $requestedScopes,
+        private array $profileFieldMappings,
+        private string $profileFieldSync,
         private int $defaultFrontendUserGroup,
         private bool $frontendUserProvisioningEnabled,
         private bool $anonymousSessionFallbackAllowed,
@@ -54,6 +44,8 @@ final readonly class DocCheckConfiguration
 
         $requestedScopes = self::scopes($configuration['requestedScopes'] ?? '');
         self::validateScopes($licenseMode, $requestedScopes);
+        $profileFieldMappings = self::parseProfileFieldMappings($configuration['profileFieldMapping'] ?? '');
+        $profileFieldSync = self::parseProfileFieldSync($configuration['profileFieldSync'] ?? 'create_only');
         $frontendUserProvisioningEnabled = self::boolean($configuration, 'enableFrontendUserProvisioning', false);
         $anonymousSessionFallbackAllowed = self::boolean($configuration, 'allowAnonymousSessionFallback', false);
         if ($licenseMode === 'basic' && ($frontendUserProvisioningEnabled || $anonymousSessionFallbackAllowed)) {
@@ -62,6 +54,12 @@ final readonly class DocCheckConfiguration
         if ($frontendUserProvisioningEnabled && !in_array('unique_id', $requestedScopes, true)) {
             throw new \InvalidArgumentException('Frontend-user provisioning requires the DocCheck unique_id scope.');
         }
+        self::validateProfileFieldMappings(
+            $licenseMode,
+            $requestedScopes,
+            $profileFieldMappings,
+            $frontendUserProvisioningEnabled,
+        );
 
         return new self(
             self::requiredString($configuration, 'clientId'),
@@ -69,6 +67,8 @@ final readonly class DocCheckConfiguration
             self::validatedRedirectUri($configuration),
             $licenseMode,
             $requestedScopes,
+            $profileFieldMappings,
+            $profileFieldSync,
             self::nonNegativeInteger($configuration, 'defaultFrontendUserGroup', 0),
             $frontendUserProvisioningEnabled,
             $anonymousSessionFallbackAllowed,
@@ -102,6 +102,17 @@ final readonly class DocCheckConfiguration
     public function requestedScopes(): array
     {
         return $this->requestedScopes;
+    }
+
+    /** @return list<string> */
+    public function profileFieldMappings(): array
+    {
+        return $this->profileFieldMappings;
+    }
+
+    public function profileFieldSync(): string
+    {
+        return $this->profileFieldSync;
     }
 
     public function defaultFrontendUserGroup(): int
@@ -179,14 +190,66 @@ final readonly class DocCheckConfiguration
             throw new \InvalidArgumentException('Basic DocCheck licences must not request scopes.');
         }
 
-        $allowedScopes = match ($licenseMode) {
-            'economy' => self::ECONOMY_SCOPES,
-            'business' => self::BUSINESS_SCOPES,
-            default => [],
-        };
         foreach ($requestedScopes as $scope) {
-            if (!in_array($scope, $allowedScopes, true)) {
+            try {
+                $isAvailable = DocCheckScope::from($scope)->isAvailableFor($licenseMode);
+            } catch (\ValueError) {
+                $isAvailable = false;
+            }
+            if (!$isAvailable) {
                 throw new \InvalidArgumentException(sprintf('The %s scope is not available for the selected DocCheck licence.', $scope));
+            }
+        }
+    }
+
+    /** @return list<string> */
+    private static function parseProfileFieldMappings(mixed $value): array
+    {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException('The DocCheck profileFieldMapping configuration value must be a string.');
+        }
+
+        $mappings = array_filter(array_map(trim(...), explode(',', $value)));
+        foreach ($mappings as $mapping) {
+            if (!in_array($mapping, ['name', 'email'], true)) {
+                throw new \InvalidArgumentException('DocCheck profileFieldMapping supports only name and email.');
+            }
+        }
+
+        return array_values(array_unique($mappings));
+    }
+
+    private static function parseProfileFieldSync(mixed $value): string
+    {
+        if ($value !== 'create_only') {
+            throw new \InvalidArgumentException('DocCheck profileFieldSync supports only create_only.');
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param list<string> $requestedScopes
+     * @param list<string> $profileFieldMappings
+     */
+    private static function validateProfileFieldMappings(
+        string $licenseMode,
+        array $requestedScopes,
+        array $profileFieldMappings,
+        bool $frontendUserProvisioningEnabled,
+    ): void {
+        if ($profileFieldMappings === []) {
+            return;
+        }
+        if (!$frontendUserProvisioningEnabled) {
+            throw new \InvalidArgumentException('DocCheck profileFieldMapping requires frontend-user provisioning.');
+        }
+        if ($licenseMode !== 'business') {
+            throw new \InvalidArgumentException('DocCheck profileFieldMapping is available only for Business licences.');
+        }
+        foreach ($profileFieldMappings as $mapping) {
+            if (!in_array($mapping, $requestedScopes, true)) {
+                throw new \InvalidArgumentException(sprintf('DocCheck profileFieldMapping %s requires the %s scope.', $mapping, $mapping));
             }
         }
     }

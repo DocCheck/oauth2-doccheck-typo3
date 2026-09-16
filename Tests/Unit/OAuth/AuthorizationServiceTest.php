@@ -45,6 +45,19 @@ final class AuthorizationServiceTest extends TestCase
         $this->service()->createAuthorizationUrl($this->configuration(['licenseMode' => 'economy']));
     }
 
+    #[Test]
+    public function businessAuthorizationUsesEverySupportedPublicScope(): void
+    {
+        $url = $this->service()->createAuthorizationUrl($this->configuration([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id,profession,country,language,name,email,address,occupation_detail',
+        ]), 'business-state');
+
+        parse_str((string)parse_url($url, PHP_URL_QUERY), $query);
+        self::assertSame('business-state', $query['state']);
+        self::assertSame('unique_id,profession,country,language,name,email,address,occupation_detail', $query['scope']);
+    }
+
     private function service(): AuthorizationService
     {
         return new AuthorizationService(new ProviderFactory());

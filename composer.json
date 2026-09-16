@@ -22,6 +22,7 @@
         }
     ],
     "require": {
+        "ext-ctype": "*",
         "ext-filter": "*",
         "php": "^8.2",
         "league/oauth2-client": "^2.0",
@@ -63,6 +64,7 @@
         "lint": "parallel-lint Classes Tests",
         "cs:check": "php-cs-fixer fix --dry-run --diff",
         "phpstan": "phpstan analyse",
+        "public:check": "bash scripts/check-public-boundary.sh",
         "test:unit": "phpunit --testsuite unit",
         "test:functional": "phpunit --testsuite functional",
         "rector:dry": "rector process --dry-run",
@@ -71,6 +73,7 @@
             "composer-require-checker check composer.json"
         ],
         "ci": [
+            "@public:check",
             "@lint",
             "@cs:check",
             "@phpstan",

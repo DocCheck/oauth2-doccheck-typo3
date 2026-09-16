@@ -19,6 +19,13 @@ final readonly class FilterProtectedContentListener
             return;
         }
 
+        if ($this->protectedAccessService->isCurrentPageProtected($request)
+            && !$this->protectedAccessService->isAuthenticated($request)) {
+            $event->setRecords([]);
+
+            return;
+        }
+
         $event->setRecords(array_values(array_filter(
             $event->getRecords(),
             fn(mixed $record): bool => is_array($record) && $this->protectedAccessService->isContentVisible($record, $request),

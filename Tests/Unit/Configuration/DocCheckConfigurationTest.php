@@ -17,6 +17,8 @@ final class DocCheckConfigurationTest extends TestCase
 
         self::assertSame('basic', $configuration->licenseMode());
         self::assertSame([], $configuration->requestedScopes());
+        self::assertSame([], $configuration->profileFieldMappings());
+        self::assertSame('create_only', $configuration->profileFieldSync());
         self::assertSame(0, $configuration->defaultFrontendUserGroup());
         self::assertFalse($configuration->isFrontendUserProvisioningEnabled());
         self::assertFalse($configuration->isAnonymousSessionFallbackAllowed());
@@ -55,6 +57,84 @@ final class DocCheckConfigurationTest extends TestCase
 
         self::assertTrue($configuration->isFrontendUserProvisioningEnabled());
         self::assertTrue($configuration->isAnonymousSessionFallbackAllowed());
+    }
+
+    #[Test]
+    public function businessConfigurationAcceptsAllSupportedPublicScopes(): void
+    {
+        $configuration = DocCheckConfiguration::fromArray($this->configuration([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id,profession,country,language,name,email,address,occupation_detail',
+        ]));
+
+        self::assertSame([
+            'unique_id', 'profession', 'country', 'language', 'name', 'email', 'address', 'occupation_detail',
+        ], $configuration->requestedScopes());
+    }
+
+    #[Test]
+    public function businessConfigurationAcceptsOptInNameAndEmailMappings(): void
+    {
+        $configuration = DocCheckConfiguration::fromArray($this->configuration([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id,name,email',
+            'enableFrontendUserProvisioning' => true,
+            'profileFieldMapping' => 'name,email',
+        ]));
+
+        self::assertSame(['name', 'email'], $configuration->profileFieldMappings());
+    }
+
+    #[Test]
+    public function profileFieldMappingRejectsUnsupportedValues(): void
+    {
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('supports only name and email');
+
+        DocCheckConfiguration::fromArray($this->configuration([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id,name,email',
+            'enableFrontendUserProvisioning' => true,
+            'profileFieldMapping' => 'first_name',
+        ]));
+    }
+
+    #[Test]
+    public function profileFieldMappingRequiresItsMatchingScope(): void
+    {
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('requires the email scope');
+
+        DocCheckConfiguration::fromArray($this->configuration([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id,name',
+            'enableFrontendUserProvisioning' => true,
+            'profileFieldMapping' => 'email',
+        ]));
+    }
+
+    #[Test]
+    public function profileFieldMappingRequiresProvisioningBusinessAndItsScope(): void
+    {
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('requires frontend-user provisioning');
+
+        DocCheckConfiguration::fromArray($this->configuration([
+            'licenseMode' => 'business',
+            'requestedScopes' => 'unique_id,name',
+            'profileFieldMapping' => 'name',
+        ]));
+    }
+
+    #[Test]
+    public function profileFieldSyncRejectsAnyUpdatingPolicy(): void
+    {
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('supports only create_only');
+
+        DocCheckConfiguration::fromArray($this->configuration([
+            'profileFieldSync' => 'always',
+        ]));
     }
 
     #[Test]

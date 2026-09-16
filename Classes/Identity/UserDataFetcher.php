@@ -10,8 +10,5 @@ use League\OAuth2\Client\Token\AccessToken;
 /** Boundary for retrieving consented profile data through the provider package. */
 interface UserDataFetcher
 {
-    /**
-     * @return array<string, mixed>
-     */
-    public function fetch(DocCheckConfiguration $configuration, AccessToken $accessToken): array;
+    public function fetch(DocCheckConfiguration $configuration, AccessToken $accessToken): UserDataResult;
 }

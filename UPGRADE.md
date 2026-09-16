@@ -27,3 +27,11 @@ Review [docs/Configuration.md](docs/Configuration.md) at every upgrade.
 In particular, do not enable anonymous-session fallback merely to hide a
 provisioning error: it intentionally changes the access decision for paid
 licences.
+
+Scope identifiers remain unchanged, but their user-data responses are now
+mapped through the documented scope catalogue. Review the [scope
+reference](docs/Configuration.md#scope-reference) before relying on data in a
+custom session-status template. `unique_id` remains the only persisted identity
+key. A Business site can separately enable the documented create-only `name`
+and `email` FE-user mappings; enabling them neither backfills nor overwrites
+existing records.

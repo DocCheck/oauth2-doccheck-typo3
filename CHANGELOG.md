@@ -6,10 +6,19 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Added
+
+- Optional, Business-only create-time mappings of consented `name` and `email`
+  values to newly provisioned TYPO3 frontend users. Existing local profile
+  fields are never overwritten and email is never used as an identity key.
+
 ### Fixed
 
-- Report abandoned transitive packages during Composer audit without failing the
-  supported TYPO3 13 compatibility lanes; security advisories remain blocking.
+- Render unauthenticated protected-page notices inside the site's normal Fluid
+  layout and navigation, while removing every protected-page content record.
+- Map every supported DocCheck scope to its documented user-data fields instead
+  of treating scope identifiers as response-field names. Incomplete, partial,
+  and invalid responses can be diagnosed without logging profile values.
 
 ## 0.8.0-beta1 - 2026-09-08
 
@@ -18,10 +27,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Composer installation and configuration documentation.
 - Basic, Economy, and Business licence-mode handling.
 - Official DocCheck login-button integration, protected pages/content, local
-- Editor-facing diagnostic session-status content element with token-free licence and local-session details.
   logout, and token-free session-status diagnostics.
-- Callback functional tests using a fake provider.
-- GitHub Actions compatibility matrix for TYPO3 13.4/14.3 and PHP 8.2–8.5.
+- Editor-facing diagnostic session-status content element with token-free licence
+  and local-session details.
 
 ### Security
 
