@@ -8,7 +8,7 @@ defined('TYPO3') || exit;
 
 ExtensionManagementUtility::addTCAcolumns('pages', [
     'tx_oauth2docchecktypo3_requires_auth' => [
-        'label' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:pages.requiresAuth',
+        'label' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.field.requireAuthentication',
         'config' => [
             'type' => 'check',
             'renderType' => 'checkboxToggle',

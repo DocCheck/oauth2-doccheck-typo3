@@ -3,10 +3,14 @@
     <file source-language="en" datatype="plaintext" original="messages" date="2026-09-02T00:00:00Z" product-name="oauth2_doccheck_typo3">
         <header/>
         <body>
-            <trans-unit id="pages.requiresAuth"><source>Require DocCheck authentication</source></trans-unit>
-            <trans-unit id="ttContent.requiresAuth"><source>Require DocCheck authentication</source></trans-unit>
-            <trans-unit id="ttContent.loginButton"><source>DocCheck Access login button</source></trans-unit>
-            <trans-unit id="ttContent.sessionStatus"><source>DocCheck session status (diagnostic)</source></trans-unit>
+            <trans-unit id="tca.tab.doccheckAccess"><source>DocCheck Access</source></trans-unit>
+            <trans-unit id="tca.ctype.loginButton"><source>DocCheck Access login button</source></trans-unit>
+            <trans-unit id="tca.ctype.sessionStatus"><source>DocCheck Access session status (diagnostic)</source></trans-unit>
+            <trans-unit id="tca.field.requireAuthentication"><source>Require DocCheck Access authentication</source></trans-unit>
+            <trans-unit id="tca.field.returnPath"><source>Return path after DocCheck Access login</source></trans-unit>
+            <trans-unit id="tca.field.returnPath.description"><source>Local path opened after a successful login. Leave empty to return to the current page.</source></trans-unit>
+            <trans-unit id="tca.field.formLanguage"><source>DocCheck Access form language</source></trans-unit>
+            <trans-unit id="tca.field.formLanguage.description"><source>Two-letter language code, for example de or en. Leave empty to use the site language.</source></trans-unit>
         </body>
     </file>
 </xliff>
