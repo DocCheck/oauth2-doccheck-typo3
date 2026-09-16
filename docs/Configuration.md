@@ -22,6 +22,26 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['oauth2_doccheck_typo3'] = $configurat
 registered at DocCheck. The extension routes callbacks through
 `/doccheck/callback`.
 
+## Redirect URI and return path
+
+`redirectUri` is the technical OAuth callback URI. Register its exact complete
+HTTPS value, including the fixed `/doccheck/callback` path, for the active
+DocCheck Access client. It is not the page to which a visitor is sent after a
+successful login.
+
+For Economy and Business, use the optional `returnPath` argument of the
+`doccheck:loginButton` Fluid ViewHelper to select that destination:
+
+```html
+<doccheck:loginButton returnPath="/protected/" />
+```
+
+The extension saves the return path server-side in the single-use OAuth
+transaction. It accepts local paths only; external or unsafe values fall back
+to `/`. Without `returnPath`, the current local path is used. Basic does not
+use a transaction or a return path and redirects to `/` after a successful
+callback.
+
 ## Settings
 
 | Setting | Default | Meaning |

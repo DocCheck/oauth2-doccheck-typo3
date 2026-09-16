@@ -34,6 +34,21 @@ navigation state from being served to another visitor.
 Keep DocCheck client credentials exclusively in environment-specific TYPO3
 configuration. Never commit credentials, authorization codes, or tokens.
 
+## TYPO3 Site Set
+
+For a Site Set-based TYPO3 site, add the extension to the site's
+`config/sites/<site>/config.yaml`:
+
+```yaml
+dependencies:
+  - doccheck/oauth2-doccheck-typo3
+```
+
+The Site Set loads the TypoScript definitions for the supplied DocCheck content
+elements. For a legacy database-based `sys_template` site, include the static
+TypoScript template instead; do not use both mechanisms for the same site. See
+[Installation](docs/Installation.md) for the complete setup sequence.
+
 ## Configuration
 
 Configure these safe values through **Settings → Extension Configuration →
@@ -65,6 +80,24 @@ The callback URI must exactly match the URI registered with DocCheck. The
 extension does not provide a configurable authorization-server URL, audit-log
 files, or retention settings.
 
+### Redirect URI and return path
+
+`redirectUri` is the technical OAuth callback. It must be the exact, complete
+HTTPS URI registered for the active DocCheck Access client and use the fixed
+`/doccheck/callback` route. It is not the page a visitor sees after logging in.
+
+For Economy and Business, the `returnPath` argument of `doccheck:loginButton`
+selects the safe local destination after a successful login:
+
+```html
+<doccheck:loginButton returnPath="/protected/" />
+```
+
+The extension stores this path server-side with the single-use login
+transaction. Only local paths are accepted; external or unsafe values fall back
+to `/`. If it is omitted, the current local path is used. Basic does not use a
+transaction or `returnPath`; its successful callback redirects to `/`.
+
 ## Login button
 
 Use the included Fluid ViewHelper to render DocCheck's official web component:
@@ -90,11 +123,8 @@ present: a configured active DocCheck Access client, server-side `clientId` and
 `clientSecret`, and an exactly matching HTTPS `redirectUri`.
 
 The extension also registers an editor-facing **DocCheck Access login button**
-content element. Enable the `doccheck/oauth2-doccheck-typo3` Site Set in the
-site configuration before using it; see [Installation](docs/Installation.md).
-For legacy database-based `sys_template` sites, include the extension's static
-TypoScript template instead, but do not use both loading mechanisms. Any page
-or content element can be marked **Require DocCheck
+content element. Enable the `doccheck/oauth2-doccheck-typo3` Site Set before
+using it. Any page or content element can be marked **Require DocCheck
 authentication**. Protected content is omitted from an unauthenticated response.
 For a protected page, add `<doccheck:protectedPageNotice />` to the site Fluid
 template before rendering page content. It renders the login notice in the
