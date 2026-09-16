@@ -90,8 +90,11 @@ present: a configured active DocCheck Access client, server-side `clientId` and
 `clientSecret`, and an exactly matching HTTPS `redirectUri`.
 
 The extension also registers an editor-facing **DocCheck Access login button**
-content element. Include the extension's static TypoScript template before
-using it. Any page or content element can be marked **Require DocCheck
+content element. Enable the `doccheck/oauth2-doccheck-typo3` Site Set in the
+site configuration before using it; see [Installation](docs/Installation.md).
+For legacy database-based `sys_template` sites, include the extension's static
+TypoScript template instead, but do not use both loading mechanisms. Any page
+or content element can be marked **Require DocCheck
 authentication**. Protected content is omitted from an unauthenticated response.
 For a protected page, add `<doccheck:protectedPageNotice />` to the site Fluid
 template before rendering page content. It renders the login notice in the

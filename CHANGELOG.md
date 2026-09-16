@@ -8,6 +8,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A TYPO3 Site Set that loads the DocCheck content-element TypoScript for
+  site-based configuration.
 - Optional, Business-only create-time mappings of consented `name` and `email`
   values to newly provisioned TYPO3 frontend users. Existing local profile
   fields are never overwritten and email is never used as an identity key.

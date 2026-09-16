@@ -22,8 +22,17 @@ vendor/bin/typo3 cache:flush
 
 ## TYPO3 setup
 
-1. Include the static TypoScript template **DocCheck OAuth2 for TYPO3** in the
-   site template.
+1. Add the extension Site Set to the site's `config.yaml`:
+
+   ```yaml
+   dependencies:
+     - doccheck/oauth2-doccheck-typo3
+   ```
+
+   The Site Set loads the TypoScript definitions for the supplied DocCheck
+   content elements. For a legacy, database-based `sys_template` setup, include
+   the static TypoScript template **DocCheck OAuth2 for TYPO3** instead. Do not
+   include both for the same site.
 2. Configure the licence-specific safe settings in **Settings → Extension
    Configuration → oauth2_doccheck_typo3**.
 3. Provide the client ID, client secret, and exact HTTPS callback URI through
