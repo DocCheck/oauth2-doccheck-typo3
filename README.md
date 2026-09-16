@@ -96,7 +96,9 @@ selects the safe local destination after a successful login:
 The extension stores this path server-side with the single-use login
 transaction. Only local paths are accepted; external or unsafe values fall back
 to `/`. If it is omitted, the current local path is used. Basic does not use a
-transaction or `returnPath`; its successful callback redirects to `/`.
+transaction or `returnPath`; its successful callback redirects to `/`. Passing
+`returnPath` to a Basic login button renders a visible configuration warning
+instead of a button; remove the argument (or the content-element field).
 
 ## Login button
 

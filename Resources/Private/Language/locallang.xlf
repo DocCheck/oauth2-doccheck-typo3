@@ -8,7 +8,7 @@
             <trans-unit id="tca.ctype.sessionStatus"><source>DocCheck Access session status (diagnostic)</source></trans-unit>
             <trans-unit id="tca.field.requireAuthentication"><source>Require DocCheck Access authentication</source></trans-unit>
             <trans-unit id="tca.field.returnPath"><source>Return path after DocCheck Access login</source></trans-unit>
-            <trans-unit id="tca.field.returnPath.description"><source>Local path opened after a successful login. Leave empty to return to the current page.</source></trans-unit>
+            <trans-unit id="tca.field.returnPath.description"><source>Economy and Business only: local path opened after a successful login. Leave empty to return to the current page. Basic always redirects to /; do not set a return path.</source></trans-unit>
             <trans-unit id="tca.field.formLanguage"><source>DocCheck Access form language</source></trans-unit>
             <trans-unit id="tca.field.formLanguage.description"><source>Two-letter language code, for example de or en. Leave empty to use the site language.</source></trans-unit>
         </body>

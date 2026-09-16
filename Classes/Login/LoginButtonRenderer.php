@@ -40,6 +40,10 @@ final readonly class LoginButtonRenderer
             return '<p role="status">You are signed in with DocCheck. Use the Logout page to end this local session.</p>';
         }
 
+        if ($configuration->licenseMode() === 'basic' && ($options['returnPath'] ?? '') !== '') {
+            return $this->basicReturnPathWarning();
+        }
+
         $attributes = [
             'size' => $this->size($options['size'] ?? 'medium'),
             'language' => $this->language($request, $options['language'] ?? ''),
@@ -73,6 +77,11 @@ final readonly class LoginButtonRenderer
     private function configurationWarning(): string
     {
         return '<aside class="doccheck-info-box" role="alert"><strong>DocCheck configuration required:</strong> This site has no complete active licence profile. Configure the client ID, server-side client secret, and exact HTTPS callback URI before using this button.</aside>';
+    }
+
+    private function basicReturnPathWarning(): string
+    {
+        return '<aside class="doccheck-info-box" role="alert"><strong>DocCheck Basic limitation:</strong> The return path is only available with an Economy or Business licence. Remove the return path from this login button; a successful Basic login always redirects to <code>/</code>.</aside>';
     }
 
     private function size(string $size): string

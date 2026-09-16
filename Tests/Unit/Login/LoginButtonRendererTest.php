@@ -32,6 +32,20 @@ final class LoginButtonRendererTest extends TestCase
     }
 
     #[Test]
+    public function basicButtonRejectsAnExplicitReturnPathWithAnEditorVisibleWarning(): void
+    {
+        $markup = $this->renderer([
+            'licenseMode' => 'basic',
+            'requestedScopes' => '',
+        ])->render($this->request(), ['returnPath' => '/protected/']);
+
+        self::assertStringContainsString('role="alert"', $markup);
+        self::assertStringContainsString('DocCheck Basic limitation', $markup);
+        self::assertStringContainsString('only available with an Economy or Business licence', $markup);
+        self::assertStringNotContainsString('<dc-login-button', $markup);
+    }
+
+    #[Test]
     public function incompleteConfigurationRendersSafeWarning(): void
     {
         $renderer = new LoginButtonRenderer(
