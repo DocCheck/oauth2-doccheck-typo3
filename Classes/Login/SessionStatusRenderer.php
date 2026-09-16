@@ -13,7 +13,7 @@ final class SessionStatusRenderer
     /**
      * @param array{authenticated: bool, mode: 'none'|'basic'|'paid-anonymous'|'identity', frontendUserUid?: int, uniqueId?: string, profile?: array<string, string>} $status
      */
-    public function render(array $status, ?string $licenseMode = null): string
+    public function render(array $status, ?string $licenseMode = null, ?string $logoutToken = null): string
     {
         $description = 'This diagnostic shows only the local DocCheck session used by this website. It never displays OAuth tokens or passwords. Any profile values shown below are cleared when you log out.';
         $licenseDetails = ['Current licence configuration' => $this->licenseLabel($licenseMode)];
@@ -35,13 +35,13 @@ final class SessionStatusRenderer
             }
         }
 
-        return $this->section('Signed in', $message, $description, $details);
+        return $this->section('Signed in', $message, $description, $details, $logoutToken);
     }
 
     /**
      * @param array<string, string> $details
      */
-    private function section(string $title, string $message, string $description, array $details = []): string
+    private function section(string $title, string $message, string $description, array $details = [], ?string $logoutToken = null): string
     {
         $markup = sprintf(
             '<section class="doccheck-session-status" aria-labelledby="doccheck-session-status"><h2 id="doccheck-session-status">DocCheck session status: %s</h2><p>%s</p><p class="doccheck-session-status__description">%s</p>',
@@ -57,6 +57,12 @@ final class SessionStatusRenderer
                 }
             }
             $markup .= '</dl>';
+        }
+        if ($logoutToken !== null) {
+            $markup .= sprintf(
+                '<form method="POST" action="/doccheck/logout?return=/"><input type="hidden" name="logoutToken" value="%s" /><button type="submit">Logout</button></form>',
+                $this->escape($logoutToken),
+            );
         }
 
         $markup .= sprintf(

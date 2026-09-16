@@ -23,9 +23,8 @@ final class SessionStatusViewHelper extends AbstractViewHelper
     {
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
         $frontendUser = $request instanceof ServerRequestInterface ? $request->getAttribute('frontend.user') : null;
-        $status = $frontendUser instanceof FrontendUserAuthentication
-            ? (new AuthenticatedSession($frontendUser))->status()
-            : ['authenticated' => false, 'mode' => 'none'];
+        $session = $frontendUser instanceof FrontendUserAuthentication ? new AuthenticatedSession($frontendUser) : null;
+        $status = $session?->status() ?? ['authenticated' => false, 'mode' => 'none'];
 
         $licenseMode = null;
         try {
@@ -34,6 +33,10 @@ final class SessionStatusViewHelper extends AbstractViewHelper
             // The status element must still explain an incomplete local setup.
         }
 
-        return $this->renderer->render($status, $licenseMode);
+        return $this->renderer->render(
+            $status,
+            $licenseMode,
+            $status['authenticated'] ? $session?->logoutToken() : null,
+        );
     }
 }

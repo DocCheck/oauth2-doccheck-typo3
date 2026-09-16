@@ -26,6 +26,19 @@ final class SessionStatusRendererTest extends TestCase
     }
 
     #[Test]
+    public function authenticatedSessionRendersAnEscapedPostOnlyLogoutForm(): void
+    {
+        $markup = (new SessionStatusRenderer())->render([
+            'authenticated' => true,
+            'mode' => 'basic',
+        ], 'basic', 'logout-token-<value>');
+
+        self::assertStringContainsString('<form method="POST" action="/doccheck/logout?return=/">', $markup);
+        self::assertStringContainsString('name="logoutToken" value="logout-token-&lt;value&gt;"', $markup);
+        self::assertStringContainsString('<button type="submit">Logout</button>', $markup);
+    }
+
+    #[Test]
     public function identityProfileIsEscapedBeforeRendering(): void
     {
         $markup = (new SessionStatusRenderer())->render([
