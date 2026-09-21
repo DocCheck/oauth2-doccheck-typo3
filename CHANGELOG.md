@@ -6,6 +6,21 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## 0.8.0-beta3 - 2026-09-21
+
+### Added
+
+- Editor-selectable `small`, `medium`, and `large` sizes for the DocCheck Access login-button content element.
+
+### Fixed
+
+- Allow POST logout to clear the local DocCheck session even when the active OAuth configuration is invalid, while retaining the session-bound logout-token check.
+
+### Changed
+
+- Document why only consented `name` and `email` can be optionally mapped to newly created frontend-user records.
+- Document the fixed `/doccheck/` endpoint namespace and the current root-based single-site/client limitation.
+
 ## 0.8.0-beta2 - 2026-09-16
 
 ### Added
