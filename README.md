@@ -25,7 +25,10 @@ can provision a minimal TYPO3 frontend-user record after consent.
 The endpoints are `/doccheck/login`, `/doccheck/callback`, and
 `/doccheck/logout`. Logout is a POST-only local action. It clears the
 extension-owned Basic or paid session; it does not and cannot invalidate a
-user’s central DocCheck login.
+user’s central DocCheck login. The fixed endpoints currently require a
+root-based single-site/client configuration; see
+[Configuration](docs/Configuration.md#fixed-endpoint-and-site-limitations) for
+multi-site and path-prefix limitations.
 
 Responses for an authenticated extension session are excluded from TYPO3's
 shared frontend page cache. This prevents protected content or an authenticated

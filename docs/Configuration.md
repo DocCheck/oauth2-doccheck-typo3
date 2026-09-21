@@ -42,6 +42,24 @@ to `/`. Without `returnPath`, the current local path is used. Basic does not
 use a transaction or a return path and redirects to `/` after a successful
 callback.
 
+### Fixed endpoint and site limitations
+
+The extension reserves the root-level endpoints `/doccheck/login`,
+`/doccheck/callback`, and `/doccheck/logout`. A TYPO3 frontend middleware
+handles them before page resolution, so do not create TYPO3 pages or
+route-enhancer rules using the `/doccheck/` namespace.
+
+The current configuration supports one active DocCheck client and exact callback
+URI per TYPO3 installation. It is intended for a root-based site URL such as
+`https://example.test/doccheck/callback`. Installations with multiple domains,
+per-site OAuth clients, or a site hosted below a path prefix such as
+`https://example.test/subsite/` require a site-aware configuration and routing
+extension before they are supported.
+
+`/doccheck/logout` clears only the extension-owned local session. It accepts a
+logout only by POST with the session-bound logout token; opening it by GET does
+not log the visitor out.
+
 ## Settings
 
 | Setting | Default | Meaning |

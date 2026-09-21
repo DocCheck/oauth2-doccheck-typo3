@@ -189,6 +189,52 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
         self::assertSame('/', $callbackResponse->getHeaderLine('Location'));
     }
 
+    #[Test]
+    public function logoutClearsTheLocalSessionWhenConfigurationIsInvalid(): void
+    {
+        [$middleware, $frontendUser] = $this->middlewareWithInvalidConfiguration();
+        $session = new AuthenticatedSession($frontendUser);
+        $session->establishAnonymousPaidSession();
+
+        $response = $middleware->process(
+            $this->request('/doccheck/logout', ['return' => '/login'], $frontendUser, 'POST', ['logoutToken' => $session->logoutToken()]),
+            new UnusedRequestHandler(),
+        );
+
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame('/login', $response->getHeaderLine('Location'));
+        self::assertFalse($session->isAuthenticated());
+    }
+
+    #[Test]
+    public function invalidLogoutTokenDoesNotClearTheLocalSessionWhenConfigurationIsInvalid(): void
+    {
+        [$middleware, $frontendUser] = $this->middlewareWithInvalidConfiguration();
+        $session = new AuthenticatedSession($frontendUser);
+        $session->establishAnonymousPaidSession();
+
+        $response = $middleware->process(
+            $this->request('/doccheck/logout', [], $frontendUser, 'POST', ['logoutToken' => 'invalid']),
+            new UnusedRequestHandler(),
+        );
+
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame('/logout', $response->getHeaderLine('Location'));
+        self::assertTrue($session->isAuthenticated());
+        self::assertTrue($session->consumeLogoutFailure());
+    }
+
+    #[Test]
+    public function logoutGetRedirectsWithoutReadingInvalidConfiguration(): void
+    {
+        [$middleware, $frontendUser] = $this->middlewareWithInvalidConfiguration();
+
+        $response = $middleware->process($this->request('/doccheck/logout', [], $frontendUser), new UnusedRequestHandler());
+
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame('/logout', $response->getHeaderLine('Location'));
+    }
+
     /**
      * @return array{DocCheckOAuthMiddleware, FakeDocCheckProvider, FakeIdentityEstablisher, InMemoryFrontendUserAuthentication, FakeAuthorizationUrlGenerator}
      */
@@ -228,17 +274,42 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
         ];
     }
 
+    /** @return array{DocCheckOAuthMiddleware, InMemoryFrontendUserAuthentication} */
+    private function middlewareWithInvalidConfiguration(): array
+    {
+        $provider = new FakeDocCheckProvider();
+        $frontendUser = new InMemoryFrontendUserAuthentication();
+
+        return [
+            new DocCheckOAuthMiddleware(
+                new ThrowingConfigurationProvider(),
+                new FakeAuthorizationUrlGenerator(),
+                new OAuthTransactionFactory(),
+                $provider,
+                $provider,
+                new FakeIdentityEstablisher(),
+                new InformationPageRenderer(),
+            ),
+            $frontendUser,
+        ];
+    }
+
     /** @param array<string, string> $parameters */
     private function oauthCallback(array $parameters, FrontendUserAuthentication $frontendUser): ServerRequestInterface
     {
         return $this->request('/doccheck/callback', $parameters, $frontendUser);
     }
 
-    /** @param array<string, string> $parameters */
-    private function request(string $path, array $parameters, FrontendUserAuthentication $frontendUser): ServerRequestInterface
+    /**
+     * @param array<string, string> $parameters
+     * @param array<string, string> $body
+     */
+    private function request(string $path, array $parameters, FrontendUserAuthentication $frontendUser, string $method = 'GET', array $body = []): ServerRequestInterface
     {
         return (new ServerRequest('https://functional.test' . $path))
+            ->withMethod($method)
             ->withQueryParams($parameters)
+            ->withParsedBody($body)
             ->withAttribute('frontend.user', $frontendUser);
     }
 
@@ -257,6 +328,14 @@ final class FixedConfigurationProvider implements DocCheckConfigurationProvider
     public function create(): DocCheckConfiguration
     {
         return $this->configuration;
+    }
+}
+
+final class ThrowingConfigurationProvider implements DocCheckConfigurationProvider
+{
+    public function create(): DocCheckConfiguration
+    {
+        throw new \InvalidArgumentException('Invalid DocCheck configuration.');
     }
 }
 

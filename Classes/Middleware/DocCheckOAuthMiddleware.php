@@ -44,11 +44,14 @@ final readonly class DocCheckOAuthMiddleware implements MiddlewareInterface
             return $this->informationPageRenderer->render('DocCheck Login is unavailable.', 503);
         }
 
+        if ($path === '/doccheck/logout') {
+            return $this->logout($request, $frontendUser);
+        }
+
         try {
             $configuration = $this->configurationFactory->create();
             return match ($path) {
                 '/doccheck/login' => $this->startLogin($request, $configuration, $frontendUser),
-                '/doccheck/logout' => $this->logout($request, $frontendUser),
                 default => $this->handleCallback($request, $configuration, $frontendUser),
             };
         } catch (\Throwable) {
