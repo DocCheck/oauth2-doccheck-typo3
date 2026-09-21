@@ -128,6 +128,13 @@ setting does not backfill existing records. Values such as address, country,
 language, profession, and occupation detail are not persistable through this
 setting and are rejected as configuration values.
 
+This limit is deliberate. `unique_id` is the only stable DocCheck identity key,
+while name and email have well-defined standard `fe_users` fields. Address,
+country, language, profession, and occupation detail have site-specific TYPO3
+field semantics, retention requirements, and processing purposes. Persist them
+only through an explicitly designed site integration with an appropriate
+data-protection review.
+
 When `debugLogging` is enabled, an incomplete scope response produces a TYPO3
 log warning containing only the scope identifier, status (`missing`, `partial`,
 or `invalid`), and missing API field names. It never logs response values,

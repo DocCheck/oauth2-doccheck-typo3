@@ -46,6 +46,17 @@ final class LoginButtonRendererTest extends TestCase
     }
 
     #[Test]
+    public function buttonSizeIsRestrictedToSupportedValues(): void
+    {
+        foreach (['small', 'medium', 'large', 'unexpected'] as $configuredSize) {
+            $markup = $this->renderer()->render($this->request(), ['size' => $configuredSize]);
+            $expectedSize = $configuredSize === 'unexpected' ? 'medium' : $configuredSize;
+
+            self::assertStringContainsString(sprintf('size="%s"', $expectedSize), $markup);
+        }
+    }
+
+    #[Test]
     public function incompleteConfigurationRendersSafeWarning(): void
     {
         $renderer = new LoginButtonRenderer(

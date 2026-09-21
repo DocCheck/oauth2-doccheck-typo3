@@ -36,6 +36,20 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
             'default' => '',
         ],
     ],
+    'tx_oauth2docchecktypo3_size' => [
+        'label' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.field.buttonSize',
+        'description' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.field.buttonSize.description',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.field.buttonSize.small', 'value' => 'small'],
+                ['label' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.field.buttonSize.medium', 'value' => 'medium'],
+                ['label' => 'LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.field.buttonSize.large', 'value' => 'large'],
+            ],
+            'default' => 'medium',
+        ],
+    ],
 ]);
 ExtensionManagementUtility::addToAllTCAtypes('tt_content', 'tx_oauth2docchecktypo3_requires_auth', '', 'after:fe_group');
 
@@ -52,7 +66,7 @@ ExtensionManagementUtility::addPlugin(
 );
 
 $GLOBALS['TCA']['tt_content']['types']['oauth2docchecktypo3_loginbutton'] = [
-    'showitem' => '--palette--;;general, --palette--;;headers, --div--;LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.tab.doccheckAccess, tx_oauth2docchecktypo3_return_path, tx_oauth2docchecktypo3_language, --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access, --palette--;;hidden',
+    'showitem' => '--palette--;;general, --palette--;;headers, --div--;LLL:EXT:oauth2_doccheck_typo3/Resources/Private/Language/locallang.xlf:tca.tab.doccheckAccess, tx_oauth2docchecktypo3_return_path, tx_oauth2docchecktypo3_language, tx_oauth2docchecktypo3_size, --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access, --palette--;;hidden',
 ];
 
 ExtensionManagementUtility::addPlugin(
