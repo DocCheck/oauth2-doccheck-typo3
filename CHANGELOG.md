@@ -6,6 +6,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## 0.8.0-beta4 - 2026-10-06
+
 ### Fixed
 
 - Log structured DocCheck middleware failures with safe route, stage, licence,
