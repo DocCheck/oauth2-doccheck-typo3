@@ -160,6 +160,14 @@ OAuth tokens, credentials, or callback parameters. A diagnostic is not a
 consent decision; the login can continue when its required identity data is
 available. Missing `unique_id` prevents provisioning.
 
+Unexpected exceptions in the DocCheck middleware are logged at error level
+regardless of `debugLogging`. These entries contain only the route, processing
+stage, licence mode when known, exception class, and an opaque failure
+reference. Exception messages, stack traces, query/body data, authorization
+codes, tokens, client secrets, and profile values are deliberately excluded;
+the reference shown on the generic error page can be used to correlate a
+server-side log entry.
+
 ## Diagnostic session-status content element
 
 The extension provides a **DocCheck Access session status (diagnostic)** content

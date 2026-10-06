@@ -21,6 +21,9 @@ services:
   DocCheck\OAuth2DocCheckTypo3\Identity\IdentityEstablisher:
     alias: DocCheck\OAuth2DocCheckTypo3\Identity\IdentityService
 
+  DocCheck\OAuth2DocCheckTypo3\Logging\OAuthFailureLoggerInterface:
+    alias: DocCheck\OAuth2DocCheckTypo3\Logging\OAuthFailureLogger
+
   DocCheck\OAuth2DocCheckTypo3\Login\LoginButtonRenderer:
     public: true
 

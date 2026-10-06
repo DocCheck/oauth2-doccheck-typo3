@@ -8,6 +8,7 @@ use DocCheck\OAuth2DocCheckTypo3\Access\AuthenticatedSession;
 use DocCheck\OAuth2DocCheckTypo3\Configuration\DocCheckConfigurationProvider;
 use DocCheck\OAuth2DocCheckTypo3\Identity\IdentityEstablisher;
 use DocCheck\OAuth2DocCheckTypo3\Identity\UserDataFetcher;
+use DocCheck\OAuth2DocCheckTypo3\Logging\OAuthFailureLoggerInterface;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\AuthorizationUrlGenerator;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\FrontendSessionOAuthTransactionStore;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\OAuthTransactionFactory;
@@ -30,6 +31,7 @@ final readonly class DocCheckOAuthMiddleware implements MiddlewareInterface
         private UserDataFetcher $userDataService,
         private IdentityEstablisher $identityService,
         private InformationPageRenderer $informationPageRenderer,
+        private OAuthFailureLoggerInterface $failureLogger,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -45,17 +47,42 @@ final readonly class DocCheckOAuthMiddleware implements MiddlewareInterface
         }
 
         if ($path === '/doccheck/logout') {
-            return $this->logout($request, $frontendUser);
+            try {
+                return $this->logout($request, $frontendUser);
+            } catch (\Throwable $exception) {
+                $reference = $this->failureLogger->error($path, 'logout', null, $exception);
+
+                return $this->informationPageRenderer->render(
+                    sprintf('DocCheck logout could not be completed. Please try again later. Reference: %s', $reference),
+                    400,
+                );
+            }
         }
 
         try {
             $configuration = $this->configurationFactory->create();
+        } catch (\Throwable $exception) {
+            $reference = $this->failureLogger->error($path, 'configuration', null, $exception);
+
+            return $this->informationPageRenderer->render(
+                sprintf('DocCheck Login could not be completed. Please try again later. Reference: %s', $reference),
+                400,
+            );
+        }
+
+        try {
             return match ($path) {
                 '/doccheck/login' => $this->startLogin($request, $configuration, $frontendUser),
                 default => $this->handleCallback($request, $configuration, $frontendUser),
             };
-        } catch (\Throwable) {
-            return $this->informationPageRenderer->render('DocCheck Login could not be completed. Please try again later.', 400);
+        } catch (\Throwable $exception) {
+            $stage = $path === '/doccheck/login' ? 'login_start' : 'callback_validation';
+            $reference = $this->failureLogger->error($path, $stage, $configuration->licenseMode(), $exception);
+
+            return $this->informationPageRenderer->render(
+                sprintf('DocCheck Login could not be completed. Please try again later. Reference: %s', $reference),
+                400,
+            );
         }
     }
 
@@ -67,9 +94,10 @@ final readonly class DocCheckOAuthMiddleware implements MiddlewareInterface
 
         $returnPath = $this->safeReturnPath($request->getQueryParams()['return'] ?? '/');
         $transaction = $this->transactionFactory->create($returnPath, new \DateTimeImmutable());
+        $response = new RedirectResponse($this->authorizationService->createAuthorizationUrl($configuration, $transaction->state()));
         (new FrontendSessionOAuthTransactionStore($frontendUser))->save($transaction);
 
-        return new RedirectResponse($this->authorizationService->createAuthorizationUrl($configuration, $transaction->state()));
+        return $response;
     }
 
     private function handleCallback(ServerRequestInterface $request, \DocCheck\OAuth2DocCheckTypo3\Configuration\DocCheckConfiguration $configuration, FrontendUserAuthentication $frontendUser): ResponseInterface
@@ -96,8 +124,13 @@ final readonly class DocCheckOAuthMiddleware implements MiddlewareInterface
 
         try {
             $accessToken = $this->tokenExchangeService->exchange($configuration, $parameters['code']);
-        } catch (\Throwable) {
-            return $this->informationPageRenderer->render('DocCheck Login could not verify the authorization response. Check the active client and exact callback URI, then try again.', 400);
+        } catch (\Throwable $exception) {
+            $reference = $this->failureLogger->error('/doccheck/callback', 'token_exchange', $configuration->licenseMode(), $exception);
+
+            return $this->informationPageRenderer->render(
+                sprintf('DocCheck Login could not verify the authorization response. Check the active client and exact callback URI, then try again. Reference: %s', $reference),
+                400,
+            );
         }
         if ($configuration->licenseMode() !== 'basic') {
             if (!$configuration->isFrontendUserProvisioningEnabled()) {
@@ -111,15 +144,25 @@ final readonly class DocCheckOAuthMiddleware implements MiddlewareInterface
 
             try {
                 $userData = $this->userDataService->fetch($configuration, $accessToken);
-            } catch (\Throwable) {
-                return $this->informationPageRenderer->render('DocCheck Login could not retrieve the consented profile data. Check the selected licence scopes and consent, then try again.', 400);
+            } catch (\Throwable $exception) {
+                $reference = $this->failureLogger->error('/doccheck/callback', 'user_data_fetch', $configuration->licenseMode(), $exception);
+
+                return $this->informationPageRenderer->render(
+                    sprintf('DocCheck Login could not retrieve the consented profile data. Check the selected licence scopes and consent, then try again. Reference: %s', $reference),
+                    400,
+                );
             }
             $site = $request->getAttribute('site');
             $storagePid = $site instanceof \TYPO3\CMS\Core\Site\Entity\Site ? $site->getRootPageId() : 0;
             try {
                 $this->identityService->establish($userData, $configuration, $frontendUser, $storagePid);
-            } catch (\Throwable) {
-                return $this->informationPageRenderer->render('DocCheck Login verified your profile but could not establish the local DocCheck session. Please try again.', 500);
+            } catch (\Throwable $exception) {
+                $reference = $this->failureLogger->error('/doccheck/callback', 'identity_establishment', $configuration->licenseMode(), $exception);
+
+                return $this->informationPageRenderer->render(
+                    sprintf('DocCheck Login verified your profile but could not establish the local DocCheck session. Please try again. Reference: %s', $reference),
+                    500,
+                );
             }
 
             return new RedirectResponse($returnPath);

@@ -6,6 +6,12 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Fixed
+
+- Log structured DocCheck middleware failures with safe route, stage, licence,
+  exception-class, and correlation-reference diagnostics without recording
+  OAuth credentials, tokens, request data, or profile values.
+
 ## 0.8.0-beta3 - 2026-09-21
 
 ### Added

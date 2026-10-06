@@ -60,12 +60,12 @@ oauth2_doccheck_typo3**:
 - licence mode (`basic`, `economy`, or `business`)
 - comma-separated minimum scopes (Economy/Business only; Basic rejects scopes)
 - scope-specific API field mapping; requested scopes are never interpreted as response-field names (see [Configuration](docs/Configuration.md#scope-reference))
-- optional privacy-safe diagnostics for missing, partial, or invalid scope responses via `debugLogging` (see [Configuration](docs/Configuration.md#scope-reference))
+- optional privacy-safe diagnostics for missing, partial, or invalid scope responses via `debugLogging`; unexpected middleware failures are always logged without sensitive OAuth data (see [Configuration](docs/Configuration.md#scope-reference))
 - optional default frontend-user group UID
 - enable frontend-user provisioning (Economy/Business only)
 - optional, create-only `name` and `email` mappings for newly provisioned Business FE users; never an email-based identity lookup
 - explicit anonymous-session fallback (Economy/Business only; disabled by default)
-- development diagnostic logging
+- development scope diagnostics and safe middleware failure references
 
 Set `clientId`, `clientSecret`, and the exact registered HTTPS `redirectUri` in
 environment-specific TYPO3 configuration, for example a local

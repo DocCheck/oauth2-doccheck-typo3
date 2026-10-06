@@ -11,6 +11,7 @@ use DocCheck\OAuth2DocCheckTypo3\Identity\DocCheckProfile;
 use DocCheck\OAuth2DocCheckTypo3\Identity\IdentityEstablisher;
 use DocCheck\OAuth2DocCheckTypo3\Identity\UserDataFetcher;
 use DocCheck\OAuth2DocCheckTypo3\Identity\UserDataResult;
+use DocCheck\OAuth2DocCheckTypo3\Logging\OAuthFailureLoggerInterface;
 use DocCheck\OAuth2DocCheckTypo3\Middleware\DocCheckOAuthMiddleware;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\AuthorizationUrlGenerator;
 use DocCheck\OAuth2DocCheckTypo3\OAuth\FrontendSessionOAuthTransactionStore;
@@ -139,23 +140,56 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
     #[Test]
     public function tokenExchangeFailureDoesNotEstablishAnIdentity(): void
     {
-        [$middleware, $provider, $identity, $frontendUser] = $this->middleware();
+        [$middleware, $provider, $identity, $frontendUser, , $failureLogger] = $this->middleware();
         $provider->failTokenExchange = true;
+        $provider->tokenExchangeExceptionMessage = 'authorization-code=secret-code client_secret=secret-value access_token=secret-token';
         $this->saveTransaction($frontendUser, 'token-failure-state', '/');
 
         $response = $middleware->process($this->oauthCallback(['code' => 'invalid-code', 'state' => 'token-failure-state'], $frontendUser), new UnusedRequestHandler());
 
         self::assertSame(400, $response->getStatusCode());
         self::assertStringContainsString('could not verify the authorization response', (string)$response->getBody());
+        self::assertStringContainsString('functional-failure-reference', (string)$response->getBody());
+        self::assertStringNotContainsString('secret-code', (string)$response->getBody());
+        self::assertStringNotContainsString('secret-value', (string)$response->getBody());
+        self::assertStringNotContainsString('secret-token', (string)$response->getBody());
         self::assertSame(1, $provider->tokenExchangeCalls);
         self::assertSame(0, $identity->establishCalls);
         self::assertFalse((new AuthenticatedSession($frontendUser))->isAuthenticated());
+        self::assertSame([[
+            'route' => '/doccheck/callback',
+            'stage' => 'token_exchange',
+            'licenseMode' => 'economy',
+            'exceptionClass' => \RuntimeException::class,
+        ]], $failureLogger->events);
+    }
+
+    #[Test]
+    public function userDataFailureIsLoggedWithoutExceptionDetails(): void
+    {
+        [$middleware, $provider, , $frontendUser, , $failureLogger] = $this->middleware();
+        $provider->failUserData = true;
+        $provider->userDataExceptionMessage = 'profile=email@example.test access_token=secret-token';
+        $this->saveTransaction($frontendUser, 'user-data-failure-state', '/');
+
+        $response = $middleware->process($this->oauthCallback(['code' => 'functional-code', 'state' => 'user-data-failure-state'], $frontendUser), new UnusedRequestHandler());
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertStringContainsString('could not retrieve the consented profile data', (string)$response->getBody());
+        self::assertStringNotContainsString('example.test', (string)$response->getBody());
+        self::assertStringNotContainsString('secret-token', (string)$response->getBody());
+        self::assertSame([[
+            'route' => '/doccheck/callback',
+            'stage' => 'user_data_fetch',
+            'licenseMode' => 'economy',
+            'exceptionClass' => \RuntimeException::class,
+        ]], $failureLogger->events);
     }
 
     #[Test]
     public function provisioningFailureReturnsSafeErrorWithoutLocalSession(): void
     {
-        [$middleware, $provider, $identity, $frontendUser] = $this->middleware();
+        [$middleware, $provider, $identity, $frontendUser, , $failureLogger] = $this->middleware();
         $identity->failEstablishingIdentity = true;
         $this->saveTransaction($frontendUser, 'provisioning-failure-state', '/');
 
@@ -166,6 +200,30 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
         self::assertSame(1, $provider->userDataCalls);
         self::assertSame(1, $identity->establishCalls);
         self::assertFalse((new AuthenticatedSession($frontendUser))->isAuthenticated());
+        self::assertSame([[
+            'route' => '/doccheck/callback',
+            'stage' => 'identity_establishment',
+            'licenseMode' => 'economy',
+            'exceptionClass' => \RuntimeException::class,
+        ]], $failureLogger->events);
+    }
+
+    #[Test]
+    public function configurationFailureIsLoggedWithoutExceptionDetails(): void
+    {
+        [$middleware, $frontendUser, $failureLogger] = $this->middlewareWithInvalidConfiguration();
+
+        $response = $middleware->process($this->request('/doccheck/login', [], $frontendUser), new UnusedRequestHandler());
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertStringContainsString('functional-failure-reference', (string)$response->getBody());
+        self::assertStringNotContainsString('Invalid DocCheck configuration', (string)$response->getBody());
+        self::assertSame([[
+            'route' => '/doccheck/login',
+            'stage' => 'configuration',
+            'licenseMode' => null,
+            'exceptionClass' => \InvalidArgumentException::class,
+        ]], $failureLogger->events);
     }
 
     #[Test]
@@ -187,6 +245,34 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
 
         self::assertSame(302, $callbackResponse->getStatusCode());
         self::assertSame('/', $callbackResponse->getHeaderLine('Location'));
+    }
+
+    #[Test]
+    public function loginStartFailureDoesNotSaveNewStateOrClearOtherPendingLogins(): void
+    {
+        [$middleware, $provider, , $frontendUser, $authorizationUrlGenerator, $failureLogger] = $this->middleware();
+        $this->saveTransaction($frontendUser, 'other-tab-state', '/other-tab');
+        $authorizationUrlGenerator->failAuthorizationUrl = true;
+
+        $response = $middleware->process(
+            $this->request('/doccheck/login', ['return' => '/protected'], $frontendUser),
+            new UnusedRequestHandler(),
+        );
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertStringContainsString('functional-failure-reference', (string)$response->getBody());
+        self::assertStringNotContainsString('secret-value', (string)$response->getBody());
+        self::assertNotNull($authorizationUrlGenerator->receivedState);
+        $transactionStore = new FrontendSessionOAuthTransactionStore($frontendUser);
+        self::assertNull($transactionStore->consume($authorizationUrlGenerator->receivedState));
+        self::assertNotNull($transactionStore->consume('other-tab-state'));
+        self::assertSame(0, $provider->tokenExchangeCalls);
+        self::assertSame([[
+            'route' => '/doccheck/login',
+            'stage' => 'login_start',
+            'licenseMode' => 'economy',
+            'exceptionClass' => \RuntimeException::class,
+        ]], $failureLogger->events);
     }
 
     #[Test]
@@ -236,17 +322,15 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
     }
 
     /**
-     * @return array{DocCheckOAuthMiddleware, FakeDocCheckProvider, FakeIdentityEstablisher, InMemoryFrontendUserAuthentication, FakeAuthorizationUrlGenerator}
-     */
-    /**
      * @param array<string, mixed> $configurationOverrides
-     * @return array{DocCheckOAuthMiddleware, FakeDocCheckProvider, FakeIdentityEstablisher, InMemoryFrontendUserAuthentication, FakeAuthorizationUrlGenerator}
+     * @return array{DocCheckOAuthMiddleware, FakeDocCheckProvider, FakeIdentityEstablisher, InMemoryFrontendUserAuthentication, FakeAuthorizationUrlGenerator, FakeOAuthFailureLogger}
      */
     private function middleware(array $configurationOverrides = []): array
     {
         $provider = new FakeDocCheckProvider();
         $identity = new FakeIdentityEstablisher();
         $authorizationUrlGenerator = new FakeAuthorizationUrlGenerator();
+        $failureLogger = new FakeOAuthFailureLogger();
         $configuration = DocCheckConfiguration::fromArray([
             'clientId' => 'functional-client',
             'clientSecret' => 'functional-secret',
@@ -266,19 +350,22 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
                 $provider,
                 $identity,
                 new InformationPageRenderer(),
+                $failureLogger,
             ),
             $provider,
             $identity,
             new InMemoryFrontendUserAuthentication(),
             $authorizationUrlGenerator,
+            $failureLogger,
         ];
     }
 
-    /** @return array{DocCheckOAuthMiddleware, InMemoryFrontendUserAuthentication} */
+    /** @return array{DocCheckOAuthMiddleware, InMemoryFrontendUserAuthentication, FakeOAuthFailureLogger} */
     private function middlewareWithInvalidConfiguration(): array
     {
         $provider = new FakeDocCheckProvider();
         $frontendUser = new InMemoryFrontendUserAuthentication();
+        $failureLogger = new FakeOAuthFailureLogger();
 
         return [
             new DocCheckOAuthMiddleware(
@@ -289,8 +376,10 @@ final class DocCheckOAuthMiddlewareTest extends TestCase
                 $provider,
                 new FakeIdentityEstablisher(),
                 new InformationPageRenderer(),
+                $failureLogger,
             ),
             $frontendUser,
+            $failureLogger,
         ];
     }
 
@@ -342,10 +431,14 @@ final class ThrowingConfigurationProvider implements DocCheckConfigurationProvid
 final class FakeAuthorizationUrlGenerator implements AuthorizationUrlGenerator
 {
     public ?string $receivedState = null;
+    public bool $failAuthorizationUrl = false;
 
     public function createAuthorizationUrl(DocCheckConfiguration $configuration, ?string $state = null): string
     {
         $this->receivedState = $state;
+        if ($this->failAuthorizationUrl) {
+            throw new \RuntimeException('client_secret=secret-value');
+        }
 
         return 'https://provider.invalid/authorize';
     }
@@ -356,13 +449,16 @@ final class FakeDocCheckProvider implements TokenExchanger, UserDataFetcher
     public int $tokenExchangeCalls = 0;
     public int $userDataCalls = 0;
     public bool $failTokenExchange = false;
+    public string $tokenExchangeExceptionMessage = 'Fake provider rejected the code.';
+    public bool $failUserData = false;
+    public string $userDataExceptionMessage = 'Fake provider rejected the profile request.';
     public ?DocCheckConfiguration $userDataConfiguration = null;
 
     public function exchange(DocCheckConfiguration $configuration, string $code): AccessToken
     {
         ++$this->tokenExchangeCalls;
         if ($this->failTokenExchange) {
-            throw new \RuntimeException('Fake provider rejected the code.');
+            throw new \RuntimeException($this->tokenExchangeExceptionMessage);
         }
 
         return new AccessToken(['access_token' => 'functional-access-token']);
@@ -372,6 +468,9 @@ final class FakeDocCheckProvider implements TokenExchanger, UserDataFetcher
     {
         ++$this->userDataCalls;
         $this->userDataConfiguration = $configuration;
+        if ($this->failUserData) {
+            throw new \RuntimeException($this->userDataExceptionMessage);
+        }
 
         return new UserDataResult(new DocCheckProfile(
             'functional-user',
@@ -386,6 +485,24 @@ final class FakeDocCheckProvider implements TokenExchanger, UserDataFetcher
             null,
             null,
         ), []);
+    }
+}
+
+final class FakeOAuthFailureLogger implements OAuthFailureLoggerInterface
+{
+    /** @var list<array{route: string, stage: string, licenseMode: ?string, exceptionClass: class-string<\Throwable>}> */
+    public array $events = [];
+
+    public function error(string $route, string $stage, ?string $licenseMode, \Throwable $exception): string
+    {
+        $this->events[] = [
+            'route' => $route,
+            'stage' => $stage,
+            'licenseMode' => $licenseMode,
+            'exceptionClass' => $exception::class,
+        ];
+
+        return 'functional-failure-reference';
     }
 }
 
