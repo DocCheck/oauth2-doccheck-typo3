@@ -6,6 +6,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Added
+
+- DocCheck contact information and Composer package keywords.
+
 ## 0.8.0-beta4 - 2026-10-06
 
 ### Fixed
