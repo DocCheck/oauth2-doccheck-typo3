@@ -111,7 +111,7 @@
     "extra": {
         "typo3/cms": {
             "extension-key": "oauth2_doccheck_typo3",
-            "version": "0.8.0-beta4",
+            "version": "0.8.0-beta5",
             "Package": {
                 "providesPackages": []
             }

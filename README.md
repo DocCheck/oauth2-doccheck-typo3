@@ -17,7 +17,7 @@ TYPO3 OAuth 2.0 integration for DocCheck Access.
 
 ## Development status
 
-Version `0.8.0-beta4` is a pre-release. It provides validated OAuth
+Version `0.8.0-beta5` is a pre-release. It provides validated OAuth
 configuration, the official login component, and protected pages/content.
 Basic provides anonymous access after token verification. Economy and Business
 can provision a minimal TYPO3 frontend-user record after consent.
