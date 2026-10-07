@@ -5,11 +5,16 @@
     "license": "GPL-2.0-or-later",
     "authors": [
         {
+            "name": "DocCheck IT",
+            "email": "it@doccheck.com",
+            "homepage": "https://www.doccheck.com"
+        },
+        {
             "name": "Christian Emmerich",
             "role": "Developer"
         },
         {
-            "name": "Shirin Janse",
+            "name": "Shirin Jansen",
             "role": "Developer"
         },
         {
@@ -20,6 +25,15 @@
             "name": "Thorsten Daners",
             "role": "Developer"
         }
+    ],
+    "keywords": [
+        "typo3",
+        "authentication",
+        "authorization",
+        "authorisation",
+        "oauth",
+        "oauth2",
+        "doccheck"
     ],
     "require": {
         "ext-ctype": "*",
